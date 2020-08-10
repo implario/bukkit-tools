@@ -1,0 +1,64 @@
+apply plugin: 'java'
+apply plugin: 'maven-publish'
+
+group 'clepto'
+version '2.4.3'
+
+compileJava.options.encoding 'UTF-8'
+tasks.withType(JavaCompile) {
+    options.encoding 'UTF-8'
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven {
+        url "https://repo.implario.cc/public"
+    }
+    maven {
+        url "https://repo.implario.cc/releases"
+        credentials {
+            username = mavenUser
+            password = mavenPassword
+        }
+        authentication {
+            basic(BasicAuthentication)
+        }
+    }
+}
+
+dependencies {
+    testImplementation 'junit:junit:4.12'
+    annotationProcessor 'org.projectlombok:lombok:1.18.12'
+    compileOnly 'org.projectlombok:lombok:1.18.12'
+    compileOnly 'implario:paper:1.12.2'
+    compileOnly 'clepto:clepto-java:0.3.7'
+}
+
+jar {
+    from sourceSets.main.resources
+    from {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            url = "https://repo.implario.cc/public"
+            credentials {
+                username = mavenUser
+                password = mavenPassword
+            }
+        }
+    }
+    publications {
+        maven(MavenPublication) {
+            groupId = rootProject.group
+            artifactId = rootProject.name
+            version = rootProject.version
+            from components.java
+        }
+    }
+}
