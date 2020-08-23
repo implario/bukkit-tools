@@ -31,7 +31,7 @@ public interface EventPipe<T> {
 		return true;
 	}
 
-	default void acceptProjectile(Projectile projectile, Entity hitEntity, Block hitBlock) {}
+	default void acceptProjectile(T shooter, Projectile projectile, Entity hitEntity, Block hitBlock) {}
 
 	default boolean acceptDirectDamage(Entity attacker, Entity victim, double damage) {
 		return true;
