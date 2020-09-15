@@ -25,7 +25,6 @@ public class Gui {
 		this.title = title;
 		char[] chars = charMap.toCharArray();
 		this.size = (chars.length + 8) / 9 * 9;
-
 		this.charMap = new char[size];
 		this.unfilledCharMap = new char[size];
 		System.arraycopy(chars, 0, this.charMap, 0, chars.length);

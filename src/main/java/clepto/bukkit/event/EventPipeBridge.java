@@ -1,11 +1,12 @@
 package clepto.bukkit.event;
 
-import java.util.function.Function;
+import org.bukkit.World;
+
+import java.util.UUID;
 
 @FunctionalInterface
-public interface EventPipeBridge<T, U> extends Function<T, EventPipe<U>> {
+public interface EventPipeBridge<U> {
 
-	@Override
-	EventPipe<U> apply(T t);
+	EventPipe<U> apply(World world, UUID initiatorId);
 
 }

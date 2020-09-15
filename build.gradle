@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'maven-publish'
 
 group 'clepto'
-version '2.4.3'
+version '3.0.8-SNAPSHOT'
 
 compileJava.options.encoding 'UTF-8'
 tasks.withType(JavaCompile) {
@@ -13,13 +13,14 @@ repositories {
     mavenLocal()
     mavenCentral()
     maven {
-        url "https://repo.implario.cc/public"
+        url "https://repo.implario.dev/public"
     }
     maven {
-        url "https://repo.implario.cc/releases"
+        def args = nmsMavenUri.split ' '
+        url args[0]
         credentials {
-            username = mavenUser
-            password = mavenPassword
+            username = args[1]
+            password = args[2]
         }
         authentication {
             basic(BasicAuthentication)
@@ -31,8 +32,9 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     annotationProcessor 'org.projectlombok:lombok:1.18.12'
     compileOnly 'org.projectlombok:lombok:1.18.12'
-    compileOnly 'implario:paper:1.12.2'
+    compileOnly 'com.destroystokyo.paper:paper:1.12.2-escalated'
     compileOnly 'clepto:clepto-java:0.3.7'
+    compileOnly 'org.codehaus.groovy:groovy:3.0.5'
 }
 
 jar {
@@ -46,10 +48,11 @@ jar {
 publishing {
     repositories {
         maven {
-            url = "https://repo.implario.cc/public"
+            def args = publishMavenUri.split ' '
+            url = args[0]
             credentials {
-                username = mavenUser
-                password = mavenPassword
+                username = args[1]
+                password = args[2]
             }
         }
     }

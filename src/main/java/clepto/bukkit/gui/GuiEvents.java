@@ -44,7 +44,10 @@ public class GuiEvents implements Listener {
 		int slotId = e.getSlot();
 		SlotData slot = gui.getSlotData(slotId);
 
+		if (slot == null) return;
+
 		String[] commands;
+		if (e.getClick() == null) return;
 		if (e.getClick().isLeftClick()) commands = slot.getLmbCommands();
 		else if (e.getClick().isRightClick()) commands = slot.getRmbCommands();
 		else return;

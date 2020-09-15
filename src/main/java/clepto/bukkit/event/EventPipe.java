@@ -4,6 +4,7 @@ import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.*;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.inventory.Inventory;
@@ -37,7 +38,7 @@ public interface EventPipe<T> {
 		return true;
 	}
 
-	default boolean acceptIndirectDamage(Entity victim) {
+	default boolean acceptIndirectDamage(Entity victim, double finalDamage, EntityDamageEvent.DamageCause cause) {
 		return true;
 	}
 
