@@ -1,7 +1,10 @@
 package clepto.bukkit.item;
 
 import groovy.lang.Closure;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import net.minecraft.server.v1_12_R1.*;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_12_R1.util.CraftMagicNumbers;
@@ -9,9 +12,12 @@ import org.bukkit.craftbukkit.v1_12_R1.util.CraftMagicNumbers;
 import java.util.*;
 
 @NoArgsConstructor
+@Setter
+@Getter
+@Accessors(chain = true, fluent = true)
 public class ItemBuilder {
 
-	private Material type;
+	private Material item;
 	private int amount = 1;
 	private int data;
 	private final Map<String, Object> nbt = new HashMap<>();
@@ -20,21 +26,6 @@ public class ItemBuilder {
 
 	public ItemBuilder(Object context) {
 		this.context = context;
-	}
-
-	public ItemBuilder item(Material item) {
-		this.type = item;
-		return this;
-	}
-
-	public ItemBuilder data(int data) {
-		this.data = data;
-		return this;
-	}
-
-	public ItemBuilder amount(int amount) {
-		this.amount = amount;
-		return this;
 	}
 
 	public ItemBuilder nbt(String key, Object value) {
@@ -86,7 +77,7 @@ public class ItemBuilder {
 	}
 
 	public ItemStack build() {
-		ItemStack item = new ItemStack(CraftMagicNumbers.getItem(this.type), amount, data, false);
+		ItemStack item = new ItemStack(CraftMagicNumbers.getItem(this.item), amount, data, false);
 
 		if (!this.text.isEmpty()) {
 			Map<String, Object> displayMap = new HashMap<>();
