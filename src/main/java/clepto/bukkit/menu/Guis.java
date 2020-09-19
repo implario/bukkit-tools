@@ -2,6 +2,8 @@ package clepto.bukkit.menu;
 
 import clepto.bukkit.B;
 import groovy.lang.Closure;
+import groovy.lang.DelegatesTo;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -20,26 +22,22 @@ public class Guis implements Listener {
 	public static final Map<String, Closure<?>> guis = new HashMap<>();
 	public static final Map<Player, Gui> guiPlayerMap = new HashMap<>();
 
-	public static void register(String name, Closure<?> closure) {
+	public static void register(String name, @DelegatesTo(value = Gui.class, strategy = Closure.DELEGATE_FIRST) Closure closure) {
 		guis.put(name, closure);
 	}
 
-	public static Gui render(String address) {
-		return render(address, address);
-	}
-
-	public static Gui render(String address, Object context) {
+	public static Gui render(Player player, String address, Object context) {
 		Gui gui = new Gui(context);
 		Closure<?> closure = guis.get(address);
 		if (closure == null)
 			throw new NoSuchElementException("No gui '" + address + "'");
 		closure.setDelegate(gui);
-		closure.call(context);
+		closure.call(player);
 		return gui;
 	}
 
 	public static void open(Player player, String guiAddress, Object context) {
-		Gui render = render(guiAddress, context);
+		Gui render = render(player, guiAddress, context);
 		player.openInventory(render.build());
 		guiPlayerMap.put(player, render);
 	}
@@ -57,18 +55,29 @@ public class Guis implements Listener {
 		if (rawSlot < 0 || rawSlot >= gui.leftClickMap().length) return;
 		ClickType click = e.getClick();
 		if (click == null) return;
-		if (click.isLeftClick()) gui.leftClickMap()[rawSlot].call();
-		else if (click.isRightClick()) gui.rightClickMap()[rawSlot].call();
+		Closure<?> action = null;
+		if (click.isLeftClick()) action = gui.leftClickMap()[rawSlot];
+		else if (click.isRightClick()) action = gui.rightClickMap()[rawSlot];
+		if (action == null) return;
+		action.setDelegate(e.getWhoClicked());
+		action.call();
 	}
 
 	@EventHandler
 	public void handle(InventoryCloseEvent e) {
-		Guis.guiPlayerMap.remove(e.getPlayer());
+		HumanEntity player = e.getPlayer();
+		if (player instanceof Player) Guis.guiPlayerMap.remove(player);
 	}
 
 	@EventHandler
 	public void handle(PlayerQuitEvent e) {
 	    guiPlayerMap.remove(e.getPlayer());
+	}
+
+
+
+	public static Gui.Button staticButton(String key) {
+		return new Gui.Button(key.charAt(0));
 	}
 
 }

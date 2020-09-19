@@ -1,6 +1,7 @@
 package clepto.bukkit.item;
 
 import groovy.lang.Closure;
+import groovy.lang.DelegatesTo;
 import net.minecraft.server.v1_12_R1.ItemStack;
 
 import java.util.HashMap;
@@ -11,7 +12,8 @@ public class Items {
 
 	public static final Map<String, Closure<?>> items = new HashMap<>();
 
-	public static void register(String name, Closure<?> closure) {
+	public static void register(String name,
+								@DelegatesTo (value = ItemBuilder.class, strategy = Closure.DELEGATE_FIRST) Closure closure) {
 		items.put(name, closure);
 	}
 

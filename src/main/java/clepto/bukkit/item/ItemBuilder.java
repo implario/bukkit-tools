@@ -1,27 +1,31 @@
 package clepto.bukkit.item;
 
 import groovy.lang.Closure;
+import groovy.lang.DelegatesTo;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import lombok.val;
 import net.minecraft.server.v1_12_R1.*;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_12_R1.util.CraftMagicNumbers;
+import org.bukkit.enchantments.Enchantment;
 
 import java.util.*;
 
+@SuppressWarnings ({"rawtypes", "deprecation", "unchecked"})
 @NoArgsConstructor
 @Setter
 @Getter
-@Accessors(chain = true, fluent = true)
+@Accessors (chain = true, fluent = true)
 public class ItemBuilder {
 
-	private Material item;
-	private int amount = 1;
-	private int data;
-	private final Map<String, Object> nbt = new HashMap<>();
-	private final List<String> text = new ArrayList<>();
+	public Material item;
+	public int amount = 1;
+	public int data;
+	public final Map<String, Object> nbt = new HashMap<>();
+	public final List<String> text = new ArrayList<>();
 	public Object context;
 
 	public ItemBuilder(Object context) {
@@ -53,7 +57,17 @@ public class ItemBuilder {
 		}
 	}
 
-	public ItemBuilder apply(Closure<?> closure) {
+	public ItemBuilder enchant(Enchantment enchantment, int level) {
+		val enchantData = new HashMap<>();
+		enchantData.put("id", (short) enchantment.getId());
+		enchantData.put("lvl", (short) level);
+		val enchantList = new ArrayList<>();
+		enchantList.add(enchantData);
+		return this.nbt("ench", enchantList);
+	}
+
+
+	public ItemBuilder apply(@DelegatesTo(value = ItemBuilder.class, strategy = Closure.DELEGATE_FIRST) Closure<?> closure) {
 		closure.setDelegate(this);
 		closure.call();
 		return this;
@@ -99,7 +113,6 @@ public class ItemBuilder {
 
 		return item;
 	}
-
 
 	public static NBTBase toNbt(Object object) {
 		if (object instanceof Map) {
