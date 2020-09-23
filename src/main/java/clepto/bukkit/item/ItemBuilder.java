@@ -57,6 +57,10 @@ public class ItemBuilder {
 		}
 	}
 
+	public ItemBuilder armorColor(int color) {
+		return this.nbt("display", Collections.singletonMap("color", color));
+	}
+
 	public ItemBuilder enchant(Enchantment enchantment, int level) {
 		val enchantData = new HashMap<>();
 		enchantData.put("id", (short) enchantment.getId());
