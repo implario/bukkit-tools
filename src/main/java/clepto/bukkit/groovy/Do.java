@@ -7,6 +7,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.util.function.Consumer;
+
 public class Do implements Runnable {
 
 	private static Do activeTask;
@@ -37,6 +39,16 @@ public class Do implements Runnable {
 		return this;
 	}
 
+	public Do whenFinished(Consumer<Do> action) {
+		this.whenFinished = () -> action.accept(this);
+		return this;
+	}
+
+	public Do whenFinished(Runnable action) {
+		this.whenFinished = action;
+		return this;
+	}
+
 	public Do whenFinished(@DelegatesTo (value = Do.class, strategy = Closure.DELEGATE_FIRST) Closure<?> action) {
 		action.setDelegate(this);
 		this.whenFinished = action;
@@ -50,9 +62,35 @@ public class Do implements Runnable {
 		return this;
 	}
 
+	public Do ticks(Consumer<Do> action) {
+		this.action = () -> action.accept(this);
+		this.start();
+		return this;
+	}
+
+	public Do ticks(Runnable action) {
+		this.action = action;
+		this.start();
+		return this;
+	}
+
 	public Do seconds(@DelegatesTo (value = Do.class, strategy = Closure.DELEGATE_FIRST) Closure<?> action) {
 		this.ticks *= 20;
 		action.setDelegate(this);
+		this.action = action;
+		this.start();
+		return this;
+	}
+
+	public Do seconds(Consumer<Do> action) {
+		this.ticks *= 20;
+		this.action = () -> action.accept(this);
+		this.start();
+		return this;
+	}
+
+	public Do seconds(Runnable action) {
+		this.ticks *= 20;
 		this.action = action;
 		this.start();
 		return this;
@@ -65,6 +103,21 @@ public class Do implements Runnable {
 		this.start();
 		return this;
 	}
+
+	public Do minutes(Consumer<Do> action) {
+		this.ticks *= 1200;
+		this.action = () -> action.accept(this);
+		this.start();
+		return this;
+	}
+
+	public Do minutes(Runnable action) {
+		this.ticks *= 1200;
+		this.action = action;
+		this.start();
+		return this;
+	}
+
 
 	public void start() {
 

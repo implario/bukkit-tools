@@ -13,6 +13,7 @@ import org.bukkit.craftbukkit.v1_12_R1.util.CraftMagicNumbers;
 import org.bukkit.enchantments.Enchantment;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 @SuppressWarnings ({"rawtypes", "deprecation", "unchecked"})
 @NoArgsConstructor
@@ -74,6 +75,11 @@ public class ItemBuilder {
 	public ItemBuilder apply(@DelegatesTo(value = ItemBuilder.class, strategy = Closure.DELEGATE_FIRST) Closure<?> closure) {
 		closure.setDelegate(this);
 		closure.call();
+		return this;
+	}
+
+	public ItemBuilder apply(Consumer<ItemBuilder> function) {
+		function.accept(this);
 		return this;
 	}
 
@@ -146,6 +152,32 @@ public class ItemBuilder {
 		if (object.getClass() == Byte.class) return new NBTTagByte((Byte) object);
 		if (object.getClass() == byte[].class) return new NBTTagByteArray((byte[]) object);
 		if (object instanceof CharSequence) return new NBTTagString(String.valueOf(object));
+		return null;
+	}
+
+	public static Object fromNbt(NBTBase nbt) {
+		if (nbt instanceof NBTTagCompound) {
+			Map<String, Object> map = new HashMap<>();
+			NBTTagCompound nbtMap = (NBTTagCompound) nbt;
+			for (Map.Entry<String, NBTBase> entry : nbtMap.map.entrySet()) {
+				map.put(entry.getKey(), fromNbt(entry.getValue()));
+			}
+			return map;
+		}
+		if (nbt instanceof NBTTagList) {
+			Collection<Object> collection = new ArrayList<>();
+			NBTTagList nbtList = (NBTTagList) nbt;
+			for (NBTBase o : nbtList.list) collection.add(fromNbt(o));
+			return collection;
+		}
+		if (nbt.getClass() == NBTTagInt.class) return ((NBTTagInt) nbt).data;
+		if (nbt.getClass() == NBTTagDouble.class) return ((NBTTagDouble) nbt).data;
+		if (nbt.getClass() == NBTTagFloat.class) return ((NBTTagFloat) nbt).data;
+		if (nbt.getClass() == NBTTagLong.class) return ((NBTTagLong) nbt).data;
+		if (nbt.getClass() == NBTTagShort.class) return ((NBTTagShort) nbt).data;
+		if (nbt.getClass() == NBTTagByte.class) return ((NBTTagByte) nbt).data;
+		if (nbt.getClass() == NBTTagByteArray.class) return ((NBTTagByteArray) nbt).data;
+		if (nbt.getClass() == NBTTagString.class) return ((NBTTagString) nbt).data;
 		return null;
 	}
 

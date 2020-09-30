@@ -88,6 +88,7 @@ public class Gui {
 			return this;
 		}
 
+		@Tolerate
 		public Button icon(@DelegatesTo (value = ItemBuilder.class, strategy = Closure.DELEGATE_FIRST) Closure iconClosure) {
 			this.icon = new ItemBuilder().apply(iconClosure).build();
 			return this;
