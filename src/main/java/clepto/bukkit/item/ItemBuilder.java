@@ -1,5 +1,6 @@
 package clepto.bukkit.item;
 
+import clepto.bukkit.groovy.GroovyUtils;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
 import lombok.Getter;
@@ -73,13 +74,22 @@ public class ItemBuilder {
 
 
 	public ItemBuilder apply(@DelegatesTo(value = ItemBuilder.class, strategy = Closure.DELEGATE_FIRST) Closure<?> closure) {
-		closure.setDelegate(this);
-		closure.call();
-		return this;
+		return this.apply(closure, null);
+	}
+
+	public ItemBuilder apply(@DelegatesTo(value = ItemBuilder.class, strategy = Closure.DELEGATE_FIRST) Closure<?> closure, Object context) {
+		return this.apply(GroovyUtils.toConsumer(closure), context);
 	}
 
 	public ItemBuilder apply(Consumer<ItemBuilder> function) {
+		return this.apply(function, null);
+	}
+
+	public ItemBuilder apply(Consumer<ItemBuilder> function, Object context) {
+		Object oldContext = this.context;
+		if (context != null) this.context = context;
 		function.accept(this);
+		this.context = oldContext;
 		return this;
 	}
 

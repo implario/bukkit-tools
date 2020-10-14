@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 
 import java.util.function.Consumer;
@@ -20,6 +21,10 @@ public class EventContext implements EventContextProxy {
 		Bukkit.getPluginManager().registerEvent(type, listener, priority, (listener1, event) -> {
 			if (type.isInstance(event) && filter.test(event)) action.accept((T) event);
 		}, B.plugin);
+	}
+
+	public void unregisterAll() {
+		HandlerList.unregisterAll(listener);
 	}
 
 	@Override

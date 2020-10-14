@@ -15,6 +15,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.function.Consumer;
 
+import static clepto.bukkit.groovy.GroovyUtils.toConsumer;
 import static org.bukkit.event.block.Action.RIGHT_CLICK_AIR;
 import static org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK;
 import static org.bukkit.inventory.EquipmentSlot.OFF_HAND;
@@ -52,10 +53,7 @@ public interface EventContextProxy {
 	default <T extends Event> void on(@DelegatesTo.Target Class<T> type,
 									  EventPriority priority,
 									  @DelegatesTo (genericTypeIndex = 0, strategy = Closure.DELEGATE_FIRST) Closure<?> action) {
-		getEventContext().on(type, priority, event -> {
-			action.setDelegate(event);
-			action.call();
-		});
+		getEventContext().on(type, priority, toConsumer(action));
 	}
 
 	default MaterialContext on(Material material) {
@@ -82,10 +80,7 @@ public interface EventContextProxy {
 		private final EventPriority priority;
 
 		public void use(@DelegatesTo (value = PlayerInteractEvent.class, strategy = Closure.DELEGATE_FIRST) Closure<?> closure) {
-			use(event -> {
-				closure.setDelegate(event);
-				closure.run();
-			});
+			use(toConsumer(closure));
 		}
 
 		public void use(Consumer<? super PlayerInteractEvent> action) {
@@ -98,10 +93,7 @@ public interface EventContextProxy {
 		}
 
 		public void click(@DelegatesTo (value = PlayerInteractEvent.class, strategy = Closure.DELEGATE_FIRST) Closure<?> closure) {
-			click(event -> {
-				closure.setDelegate(event);
-				closure.run();
-			});
+			click(toConsumer(closure));
 		}
 
 		public void click(Consumer<? super PlayerInteractEvent> action) {
@@ -113,10 +105,7 @@ public interface EventContextProxy {
 		}
 
 		public void destroy(@DelegatesTo (value = BlockBreakEvent.class, strategy = Closure.DELEGATE_FIRST) Closure<?> closure) {
-			destroy(event -> {
-				closure.setDelegate(event);
-				closure.run();
-			});
+			destroy(toConsumer(closure));
 		}
 
 		public void destroy(Consumer<? super BlockBreakEvent> action) {
@@ -126,10 +115,7 @@ public interface EventContextProxy {
 		}
 
 		public void place(@DelegatesTo (value = BlockPlaceEvent.class, strategy = Closure.DELEGATE_FIRST) Closure<?> closure) {
-			place(event -> {
-				closure.setDelegate(event);
-				closure.run();
-			});
+			place(toConsumer(closure));
 		}
 
 		public void place(Consumer<? super BlockPlaceEvent> action) {
@@ -164,10 +150,12 @@ public interface EventContextProxy {
 		private final EventPriority priority;
 
 		public void killed(@DelegatesTo (value = EntityDeathEvent.class, strategy = Closure.DELEGATE_FIRST) Closure<?> closure) {
+			this.killed(toConsumer(closure));
+		}
+
+		public void killed(Consumer<EntityDeathEvent> action) {
 			manager.on(EntityDeathEvent.class, priority, event -> {
-				if (event.getEntityType() != entityType) return;
-				closure.setDelegate(event);
-				closure.run();
+				if (event.getEntityType() == entityType) action.accept(event);
 			});
 		}
 

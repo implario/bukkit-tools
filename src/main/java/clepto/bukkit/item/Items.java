@@ -1,5 +1,6 @@
 package clepto.bukkit.item;
 
+import clepto.bukkit.groovy.GroovyUtils;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
 import net.minecraft.server.v1_12_R1.ItemStack;
@@ -17,10 +18,10 @@ public class Items {
 
 	public static void register(String name,
 								@DelegatesTo (value = ItemBuilder.class, strategy = Closure.DELEGATE_FIRST) Closure<?> closure) {
-		items.put(name, builder -> {
-			closure.setDelegate(builder);
-			closure.call();
-		});
+		items.put(name, GroovyUtils.toConsumer(closure));
+	}
+	public static void register(String name, Consumer<ItemBuilder> consumer) {
+		items.put(name, consumer);
 	}
 
 	public static void register(String name, ItemStack itemStack) {
