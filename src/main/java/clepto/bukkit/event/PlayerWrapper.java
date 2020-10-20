@@ -1,10 +1,6 @@
 package clepto.bukkit.event;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import net.minecraft.server.v1_12_R1.Packet;
-import net.minecraft.server.v1_12_R1.PacketDataSerializer;
-import net.minecraft.server.v1_12_R1.PacketPlayOutCustomPayload;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
@@ -44,7 +40,8 @@ public interface PlayerWrapper {
 	}
 
 	default void msg(String message) {
-    	getPlayer().sendMessage(message);
+		CraftPlayer player = getPlayer();
+		if (player != null) player.sendMessage(message);
 	}
 
 	default String getDisplayName() {

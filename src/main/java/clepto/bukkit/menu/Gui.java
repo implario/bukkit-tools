@@ -24,6 +24,7 @@ public class Gui {
 
 	public static ItemStack defaultItem;
 
+	public final String address;
 	public final Object context;
 	public String title = "Меню";
 	public String layout;

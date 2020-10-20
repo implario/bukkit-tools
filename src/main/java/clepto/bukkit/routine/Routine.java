@@ -1,159 +1,107 @@
 package clepto.bukkit.routine;
 
+import clepto.bukkit.groovy.GroovyUtils;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
-import org.bukkit.Bukkit;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitScheduler;
-import org.bukkit.scheduler.BukkitTask;
 
-import java.util.List;
 import java.util.function.Consumer;
 
-public class Routine implements Runnable {
+public interface Routine {
 
-	private static Routine activeTask;
+	void setLimit(int times);
 
-	private final Plugin plugin;
-	private final boolean repeat;
-	private final List<Routine> routines;
-	private long ticks;
-	private long limit = -1;
-	public long pass;
-	private Runnable action;
-	private Runnable whenFinished;
-	public BukkitTask bukkitTask;
+	void setPass(int pass);
 
-	public Routine(Plugin plugin, boolean repeat, long ticks, List<Routine> routines) {
-		this.plugin = plugin;
-		this.repeat = repeat;
-		this.ticks = ticks;
-		this.routines = routines;
+	int getPass();
+
+	void start();
+
+	void cancel();
+
+	long getTime();
+
+	void setTime(long time);
+
+	void addMainAction(Consumer<Routine> action);
+
+	void addTerminateAction(Consumer<Routine> action);
+
+	default Routine fluentStart(long millisMultiplier, Consumer<Routine> action) {
+		this.setTime(this.getTime() * millisMultiplier);
+		return fluentStart(action);
 	}
 
-	public Routine limit(long limit) {
-		this.limit = limit;
-		return this;
-	}
-
-	public Routine whenFinished(Consumer<Routine> action) {
-		this.whenFinished = () -> action.accept(this);
-		return this;
-	}
-
-	public Routine whenFinished(Runnable action) {
-		this.whenFinished = action;
-		return this;
-	}
-
-	public Routine whenFinished(@DelegatesTo (value = Routine.class, strategy = Closure.DELEGATE_FIRST) Closure<?> action) {
-		action.setDelegate(this);
-		this.whenFinished = action;
-		return this;
-	}
-
-	public Routine ticks(@DelegatesTo (value = Routine.class, strategy = Closure.DELEGATE_FIRST) Closure<?> action) {
-		this.action = action;
-		action.setDelegate(this);
+	default Routine fluentStart(Consumer<Routine> action) {
+		this.addMainAction(action);
 		this.start();
 		return this;
 	}
 
-	public Routine ticks(Consumer<Routine> action) {
-		this.action = () -> action.accept(this);
-		this.start();
+	default Routine limit(int times) {
+		this.setLimit(times);
 		return this;
 	}
 
-	public Routine ticks(Runnable action) {
-		this.action = action;
-		this.start();
+	default Routine run(Consumer<Routine> action) {
+		this.addMainAction(action);
 		return this;
 	}
 
-	public Routine seconds(@DelegatesTo (value = Routine.class, strategy = Closure.DELEGATE_FIRST) Closure<?> action) {
-		this.ticks *= 20;
-		action.setDelegate(this);
-		this.action = action;
-		this.start();
+	default Routine run(Runnable action) {
+		return this.run(anything -> action.run());
+	}
+
+	default Routine run(@DelegatesTo (value = Routine.class, strategy = Closure.DELEGATE_FIRST) Closure<?> action) {
+		return this.run(GroovyUtils.toConsumer(action));
+	}
+
+	default Routine whenFinished(Consumer<Routine> action) {
+		this.addTerminateAction(action);
 		return this;
 	}
 
-	public Routine seconds(Consumer<Routine> action) {
-		this.ticks *= 20;
-		this.action = () -> action.accept(this);
-		this.start();
-		return this;
+	default Routine whenFinished(Runnable action) {
+		return this.whenFinished(anything -> action.run());
 	}
 
-	public Routine seconds(Runnable action) {
-		this.ticks *= 20;
-		this.action = action;
-		this.start();
-		return this;
+	default Routine whenFinished(@DelegatesTo (value = Routine.class, strategy = Closure.DELEGATE_FIRST) Closure<?> action) {
+		return this.whenFinished(GroovyUtils.toConsumer(action));
 	}
 
-	public Routine minutes(@DelegatesTo (value = Routine.class, strategy = Closure.DELEGATE_FIRST) Closure<?> action) {
-		this.ticks *= 1200;
-		action.setDelegate(this);
-		this.action = action;
-		this.start();
-		return this;
+	default Routine minutes(Runnable action) {
+		return fluentStart(50 * 20 * 60, anything -> action.run());
 	}
 
-	public Routine minutes(Consumer<Routine> action) {
-		this.ticks *= 1200;
-		this.action = () -> action.accept(this);
-		this.start();
-		return this;
+	default Routine seconds(Runnable action) {
+		return fluentStart(50 * 20, anything -> action.run());
 	}
 
-	public Routine minutes(Runnable action) {
-		this.ticks *= 1200;
-		this.action = action;
-		this.start();
-		return this;
+	default Routine ticks(Runnable action) {
+		return fluentStart(50, anything -> action.run());
 	}
 
-
-	public void start() {
-
-		BukkitScheduler scheduler = Bukkit.getScheduler();
-		bukkitTask = repeat ?
-				scheduler.runTaskTimer(plugin, this, ticks, ticks) :
-				scheduler.runTaskLater(plugin, this, ticks);
-
+	default Routine minutes(@DelegatesTo (value = Routine.class, strategy = Closure.DELEGATE_FIRST) Closure<?> action) {
+		return this.minutes(GroovyUtils.toConsumer(action));
 	}
 
-	public void cancel() {
-		if (this.bukkitTask != null) this.bukkitTask.cancel();
-		this.finish();
+	default Routine minutes(Consumer<Routine> action) {
+		return fluentStart(50 * 20 * 60, action);
 	}
 
-	private void finish() {
-		if (this.whenFinished != null) {
-			this.whenFinished.run();
-			this.whenFinished = null;
-		}
-		this.routines.remove(this);
+	default Routine seconds(@DelegatesTo (value = Routine.class, strategy = Closure.DELEGATE_FIRST) Closure<?> action) {
+		return this.seconds(GroovyUtils.toConsumer(action));
 	}
 
-	@Override
-	public void run() {
-		Routine parent = activeTask;
-		activeTask = this;
-		this.action.run();
-		this.pass++;
-		if (!this.repeat)
-			this.finish();
-		else if (this.limit >= 0 && this.pass >= this.limit)
-			this.cancel();
-		activeTask = parent;
+	default Routine seconds(Consumer<Routine> action) {
+		return fluentStart(50 * 20, action);
 	}
 
-	public static void exit() {
-		if (activeTask == null) new RuntimeException("Tried to exit when outside a task").printStackTrace();
-		else activeTask.cancel();
+	default Routine ticks(@DelegatesTo (value = Routine.class, strategy = Closure.DELEGATE_FIRST) Closure<?> action) {
+		return this.ticks(GroovyUtils.toConsumer(action));
+	}
+
+	default Routine ticks(Consumer<Routine> action) {
+		return fluentStart(50, action);
 	}
 
 }

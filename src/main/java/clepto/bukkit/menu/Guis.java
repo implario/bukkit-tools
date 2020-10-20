@@ -26,8 +26,12 @@ public class Guis implements Listener {
 		guis.put(name, closure);
 	}
 
+	public static Gui getOpenedGui(Player player) {
+		return guiPlayerMap.get(player);
+	}
+
 	public static Gui render(Player player, String address, Object context) {
-		Gui gui = new Gui(context);
+		Gui gui = new Gui(address, context);
 		Closure<?> closure = guis.get(address);
 		if (closure == null)
 			throw new NoSuchElementException("No gui '" + address + "'");

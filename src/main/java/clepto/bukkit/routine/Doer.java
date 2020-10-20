@@ -1,29 +1,55 @@
 package clepto.bukkit.routine;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import org.bukkit.plugin.Plugin;
-
-import java.util.ArrayList;
 import java.util.List;
 
-@Getter
-@RequiredArgsConstructor
-public class Doer implements IDoer {
+public interface Doer {
 
-	private final Plugin plugin;
-	private final List<Routine> routines = new ArrayList<>();
+	Routine after(long time);
 
-	public Routine after(long time) {
-		Routine routine = new Routine(plugin, false, time, routines);
-		routines.add(routine);
-		return routine;
-	}
+	Routine every(long time);
 
-	public Routine every(long time) {
-		Routine routine = new Routine(plugin, true, time, routines);
-		routines.add(routine);
-		return routine;
+	Routine simple();
+
+	List<? extends Routine> getRoutines();
+
+//	ToDo: void cancelCurrent();
+
+	void cancelAll();
+
+	interface Proxy extends Doer {
+
+		Doer getDoer();
+
+		@Override
+		default List<? extends Routine> getRoutines() {
+			return this.getDoer().getRoutines();
+		}
+
+		@Override
+		default Routine after(long time) {
+			return getDoer().after(time);
+		}
+
+		@Override
+		default Routine every(long time) {
+			return getDoer().every(time);
+		}
+
+		@Override
+		default Routine simple() {
+			return getDoer().simple();
+		}
+
+		@Override
+		default void cancelAll() {
+			this.getDoer().cancelAll();
+		}
+
+//		@Override
+//		default void cancelCurrent() {
+//			this.getDoer().cancelCurrent();
+//		}
+
 	}
 
 }
