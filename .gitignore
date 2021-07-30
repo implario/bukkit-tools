@@ -1,0 +1,6 @@
+.idea
+out/
+build/
+.gradle/
+gradle.properties
+legacy

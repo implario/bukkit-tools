@@ -1,0 +1,86 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+version '4.0.0'
+
+compileJava.options.encoding 'UTF-8'
+tasks.withType(JavaCompile) {
+    options.encoding 'UTF-8'
+}
+
+allprojects {
+
+    group 'dev.implario.bukkit'
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven {
+            url 'https://repo.anfanik.me/public'
+        }
+        maven {
+            url "https://repo.implario.dev/public"
+        }
+    }
+
+}
+
+
+dependencies {
+    testImplementation 'org.junit:junit-bom:5.7.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+
+    annotationProcessor 'org.projectlombok:lombok:1.18.12'
+    compileOnly 'org.projectlombok:lombok:1.18.12'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
+    testCompileOnly 'org.projectlombok:lombok:1.18.12'
+
+    api 'org.bukkit:bukkit:1.12.2-R0.1-SNAPSHOT'
+    testImplementation 'org.bukkit:bukkit:1.12.2-R0.1-SNAPSHOT'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jar {
+    duplicatesStrategy DuplicatesStrategy.EXCLUDE
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+allprojects {
+
+    if (project.name in ['platform']) return
+
+    apply plugin: 'java-library'
+    apply plugin: 'maven-publish'
+
+    publishing {
+        repositories {
+            maven {
+                url 'https://repo.implario.dev/public'
+                credentials {
+                    username System.getenv('IMPLARIO_REPO_USER')
+                    password System.getenv('IMPLARIO_REPO_PASSWORD')
+                }
+            }
+        }
+        def project = project
+        println(project.name)
+        publications {
+            it.create("maven", MavenPublication) {
+                it.groupId = project.group
+                it.artifactId = project.name
+                project.afterEvaluate {
+                    it.version = project.version
+                }
+                it.from project.components['java']
+            }
+        }
+    }
+
+}

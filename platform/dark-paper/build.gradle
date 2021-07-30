@@ -1,0 +1,26 @@
+
+version '1.0.0'
+
+repositories {
+
+    maven {
+        url 'https://libraries.minecraft.net'
+    }
+
+    maven {
+        url 'https://repo.implario.dev/cristalix'
+        credentials {
+            username System.getenv('IMPLARIO_REPO_USER')
+            password System.getenv('IMPLARIO_REPO_PASSWORD')
+        }
+    }
+
+}
+
+dependencies {
+
+    compileOnly 'dev.xdark:paper:live-SNAPSHOT'
+
+}
+
+
