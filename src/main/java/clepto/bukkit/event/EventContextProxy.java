@@ -155,7 +155,7 @@ public interface EventContextProxy {
 
 		public void killed(Consumer<EntityDeathEvent> action) {
 			manager.on(EntityDeathEvent.class, priority, event -> {
-				if (event.getEntityType() == entityType) action.accept(event);
+				if (event.getEntity().getType() == entityType) action.accept(event);
 			});
 		}
 

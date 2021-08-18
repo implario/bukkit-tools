@@ -1,6 +1,5 @@
 package clepto.bukkit;
 
-import clepto.ListUtils;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -15,8 +14,6 @@ import org.bukkit.command.defaults.BukkitCommand;
 import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_12_R1.block.CraftSkull;
 import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftMetaSkull;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
@@ -29,6 +26,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
 import java.util.Arrays;
+import java.util.Random;
 import java.util.UUID;
 
 public class B {
@@ -48,8 +46,10 @@ public class B {
 		loc.getWorld().playSound(loc, sound, SoundCategory.MASTER, 1, pitch);
 	}
 
+	private static final Random random = new Random();
+
 	public static Vector randomVector() {
-		return new Vector(ListUtils.random.nextGaussian(), ListUtils.random.nextGaussian(), ListUtils.random.nextGaussian()).normalize();
+		return new Vector(random.nextGaussian(), random.nextGaussian(), random.nextGaussian()).normalize();
 	}
 
 	public static int postpone(int ticks, Runnable task) {
@@ -78,13 +78,13 @@ public class B {
 		return profile;
 	}
 
-	public static ItemStack createSkull(GameProfile profile) {
-		ItemStack item = new ItemStack(Material.SKULL_ITEM, 1, (short) 3);
-		CraftMetaSkull meta = (CraftMetaSkull) item.getItemMeta();
-		meta.profile = profile;
-		item.setItemMeta(meta);
-		return item;
-	}
+//	public static ItemStack createSkull(GameProfile profile) {
+//		ItemStack item = new ItemStack(Material.SKULL_ITEM, 1, (short) 3);
+//		CraftMetaSkull meta = (CraftMetaSkull) item.getItemMeta();
+//		meta.profile = profile;
+//		item.setItemMeta(meta);
+//		return item;
+//	}
 
 	public static CraftSkull placeSkull(Location location, GameProfile profile, BlockFace rotation) {
 		Block block = location.getBlock();
@@ -145,7 +145,7 @@ public class B {
 	}
 
 	public static void itemCooldown(Player p, ItemStack itemStack, int ticks) {
-		Item item = CraftItemStack.asNMSCopy(itemStack).item;
+		Item item = itemStack.handle.item;
 		PacketPlayOutSetCooldown packet = new PacketPlayOutSetCooldown(item, ticks);
 		((CraftPlayer) p).getHandle().playerConnection.sendPacket(packet);
 	}

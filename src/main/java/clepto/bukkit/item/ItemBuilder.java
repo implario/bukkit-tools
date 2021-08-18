@@ -111,7 +111,7 @@ public class ItemBuilder {
 	}
 
 	public ItemStack build() {
-		ItemStack item = new ItemStack(CraftMagicNumbers.getItem(this.item), amount, data, false);
+		ItemStack item = new ItemStack(CraftMagicNumbers.getItem(this.item), amount, data);
 
 		if (!this.text.isEmpty()) {
 			Map<String, Object> displayMap = new HashMap<>();
@@ -127,7 +127,7 @@ public class ItemBuilder {
 		}
 
 		if (!this.nbt.isEmpty()) {
-			item.g = false;
+			item.empty = false;
 			item.tag = (NBTTagCompound) toNbt(this.nbt);
 		}
 

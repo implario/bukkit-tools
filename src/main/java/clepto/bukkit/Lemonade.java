@@ -9,16 +9,10 @@ import net.minecraft.server.v1_12_R1.NBTTagString;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftMetaSkull;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.EnchantmentStorageMeta;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.LeatherArmorMeta;
-import org.bukkit.inventory.meta.SpawnEggMeta;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -38,7 +32,6 @@ public class Lemonade {
 	private final List<String> after;
 
 	private final List<Consumer<ItemStack>> coreComposers;
-	private final List<Consumer<ItemMeta>> metaComposers;
 
 	@ToString.Include
 	private String key;
@@ -50,17 +43,16 @@ public class Lemonade {
 			Lemonade lemonade = get(parent);
 			if (lemonade != null) lemonade.render(composer);
 			else composer.composeCore(item -> {
-				item.setType(Material.valueOf(parent.toUpperCase().replace('-', '_')));
+				item.setType(Material.getMaterial(parent.toUpperCase().replace('-', '_')));
 			});
 		}
 		coreComposers.forEach(composer::composeCore);
-		metaComposers.forEach(composer::composeMeta);
 
 		for (String child : after) {
 			Lemonade lemonade = get(child);
 			if (lemonade != null) lemonade.render(composer);
 			else composer.composeCore(item -> {
-				item.setType(Material.valueOf(child.toUpperCase().replace('-', '_')));
+				item.setType(Material.getMaterial(child.toUpperCase().replace('-', '_')));
 			});
 		}
 	}
@@ -88,7 +80,7 @@ public class Lemonade {
 			if (lemonade.key == null) throw new InvalidConfigException("Tried to merge non-registered lemonade: " + lemonade);
 			parents.add(lemonade.key);
 		}
-		return new Lemonade(parents, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+		return new Lemonade(parents, new ArrayList<>(), new ArrayList<>());
 	}
 
 	public static Lemonade get(String key) {
@@ -106,7 +98,6 @@ public class Lemonade {
 		List<String> before = new ArrayList<>();
 		List<String> after = new ArrayList<>();
 		List<Consumer<ItemStack>> coreComposers = new ArrayList<>();
-		List<Consumer<ItemMeta>> metaComposers = new ArrayList<>();
 
 		// Тип предмета
 		String icon = yml.getString("icon");
@@ -140,8 +131,8 @@ public class Lemonade {
 		boolean override = yml.getBoolean("override");
 
 		if (text != null) {
-			if (override) metaComposers.add(m -> Lemonade.applyText(m, text));
-			else metaComposers.add(m -> {
+			if (override) coreComposers.add(m -> Lemonade.applyText(m, text));
+			else coreComposers.add(m -> {
 				String displayName = m.getDisplayName();
 				List<String> oldLore = m.getLore();
 
@@ -157,7 +148,7 @@ public class Lemonade {
 		String mobtype = yml.getString("mob");
 		EntityType spawnedEntity = mobtype == null ? null : parseEntityType(mobtype, yml);
 
-		if (spawnedEntity != null) metaComposers.add(m -> ((SpawnEggMeta) m).setSpawnedType(spawnedEntity));
+//		if (spawnedEntity != null) metaComposers.add(m -> ((SpawnEggMeta) m).setSpawnedType(spawnedEntity));
 
 
 		// Цвет глины, стеклянных панелек, бетона и т. п.
@@ -174,42 +165,53 @@ public class Lemonade {
 
 		List<String> enchantments = yml.getStringList("enchant");
 		if (enchantments != null) {
-			if (override) metaComposers.add(m -> m.getEnchants().keySet().forEach(m::removeEnchant));
-			metaComposers.add(m -> {
+//			if (override) coreComposers.add(m -> m.getEnchants().keySet().forEach(m::removeEnchant));
+			coreComposers.add(m -> {
 				for (String e : enchantments) parseAndApplyEnchantment(e, yml, m);
 			});
 		}
 
 		int armorColor = yml.getInt("armor-color");
-		if (armorColor > 0) metaComposers.add(m -> ((LeatherArmorMeta) m).setColor(org.bukkit.Color.fromRGB(armorColor)));
-
-		if (yml.getBoolean("unbreakable")) metaComposers.add(m -> m.setUnbreakable(true));
-
-		List<String> itemFlags = yml.getStringList("flags");
-		if (itemFlags != null) {
-			for (String flag : itemFlags) {
-				try {
-					if (flag.equals("*")) metaComposers.add(m -> m.addItemFlags(ItemFlag.values()));
-					else {
-						ItemFlag itemFlag = ItemFlag.valueOf(flag.toUpperCase());
-						metaComposers.add(m -> m.addItemFlags(itemFlag));
-					}
-				} catch (IllegalArgumentException ex) {
-					System.out.println("Флаг " + flag + " это какая-то фигня, убери его из '" + yml.getCurrentPath() + "'");
+		if (armorColor > 0) {
+			coreComposers.add(item -> {
+				NBTTagCompound tag = item.handle.getOrCreateTag();
+				NBTTagCompound display = tag.getCompound("display");
+				if (display == null) {
+					display = new NBTTagCompound();
+					tag.set("display", display);
 				}
-			}
+				display.setInt("color", armorColor);
+			});
 		}
 
-		String skin = yml.getString("skin");
-		if (skin != null) {
-			metaComposers.add(m -> ((CraftMetaSkull) m).profile = B.createDummyProfile(skin));
-		}
+		if (yml.getBoolean("unbreakable")) coreComposers.add(m -> m.setUnbreakable(true));
+
+		//todo
+//		List<String> itemFlags = yml.getStringList("flags");
+//		if (itemFlags != null) {
+//			for (String flag : itemFlags) {
+//				try {
+//					if (flag.equals("*")) metaComposers.add(m -> m.addItemFlags(ItemFlag.values()));
+//					else {
+//						ItemFlag itemFlag = ItemFlag.valueOf(flag.toUpperCase());
+//						metaComposers.add(m -> m.addItemFlags(itemFlag));
+//					}
+//				} catch (IllegalArgumentException ex) {
+//					System.out.println("Флаг " + flag + " это какая-то фигня, убери его из '" + yml.getCurrentPath() + "'");
+//				}
+//			}
+//		}
+
+//		String skin = yml.getString("skin");
+//		if (skin != null) {
+//			metaComposers.add(m -> ((CraftMetaSkull) m).profile = B.createDummyProfile(skin));
+//		}
 
 
 		ConfigurationSection nbts = yml.getConfigurationSection("nbt");
 		if (nbts != null) {
 			coreComposers.add(item -> {
-				net.minecraft.server.v1_12_R1.ItemStack nmsItem = CraftItemStack.asNMSCopy(item);
+				net.minecraft.server.v1_12_R1.ItemStack nmsItem = item.handle;
 				for (String nbtKey : nbts.getKeys(false)) {
 					Object nbtValue = nbts.get(nbtKey);
 					if (nmsItem.tag == null) nmsItem.tag = new NBTTagCompound();
@@ -226,18 +228,17 @@ public class Lemonade {
 					}
 					else System.out.println("Непонятное значение тега: '" + nbtValue + "', path: " + nbts.getCurrentPath());
 				}
-				item.setItemMeta(CraftItemStack.getItemMeta(nmsItem));
 			});
 		}
 
-		return new Lemonade(before, after, coreComposers, metaComposers);
+		return new Lemonade(before, after, coreComposers);
 	}
 	//	public static Lemonade merge(Lemonade... lemonades) {
 	//		Lemonade lemonade = new Lemonade()
 
 //	}
 
-	private static void applyText(ItemMeta meta, List<String> text) {
+	private static void applyText(ItemStack meta, List<String> text) {
 		Iterator<String> iterator = text.iterator();
 		meta.setDisplayName(iterator.hasNext() ? iterator.next() : null);
 		List<String> lore = new ArrayList<>();
@@ -245,7 +246,7 @@ public class Lemonade {
 		meta.setLore(lore.isEmpty() ? null : lore);
 	}
 
-	private static void parseAndApplyEnchantment(String str, ConfigurationSection yml, ItemMeta meta) {
+	private static void parseAndApplyEnchantment(String str, ConfigurationSection yml, ItemStack meta) {
 		String[] split = str.split("-");
 		if (split.length < 2) {
 			System.out.println("Неверный формат зачарования: '" + str + "' в предмете '" + yml.getCurrentPath() + "'");
@@ -258,8 +259,9 @@ public class Lemonade {
 		}
 		try {
 			int level = Integer.parseInt(split[1]);
-			if (meta instanceof EnchantmentStorageMeta) ((EnchantmentStorageMeta) meta).addStoredEnchant(ench, level, true);
-			else meta.addEnchant(ench, level, true);
+//			if (meta instanceof EnchantmentStorageMeta) ((EnchantmentStorageMeta) meta).addStoredEnchant(ench, level, true);
+//			else meta.addEnchant(ench, level, true);
+			meta.addUnsafeEnchantment(ench, level);
 		} catch (IllegalArgumentException ex) {
 			System.out.println("Некорректный уровень зачарования: " + split[1] + " в предмете '" + yml.getCurrentPath() + "'");
 		}

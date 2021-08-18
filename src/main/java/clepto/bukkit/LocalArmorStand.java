@@ -7,7 +7,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftItemStack;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,7 +38,7 @@ public class LocalArmorStand {
 	}
 
 	public LocalArmorStand equip(EnumItemSlot slot, org.bukkit.inventory.ItemStack bukkitItem) {
-		ItemStack nmsItem = CraftItemStack.asNMSCopy(bukkitItem);
+		ItemStack nmsItem = bukkitItem.handle;
 		equipment.put(slot, nmsItem);
 		return this;
 	}
@@ -87,7 +86,7 @@ public class LocalArmorStand {
 	private void update() {
 		PlayerConnection net = owner.getHandle().playerConnection;
 		net.sendPacket(new PacketPlayOutEntityTeleport(handle));
-		net.sendPacket(new PacketPlayOutEntityMetadata(handle.getId(), handle.getDataWatcher(), false));
+		net.sendPacket(new PacketPlayOutEntityMetadata(handle.getId(), handle.getDataWatcher(), 1));
 		equipment.forEach((slot, item) -> {
 			if (item != null) net.sendPacket(new PacketPlayOutEntityEquipment(handle.getId(), slot, item));
 		});
@@ -95,7 +94,7 @@ public class LocalArmorStand {
 
 	public void remove() {
 		if (handle != null) {
-			owner.getHandle().playerConnection.sendPacket(new PacketPlayOutEntityDestroy(handle.getId()));
+			owner.getHandle().playerConnection.sendPacket(new PacketPlayOutEntityDestroy(new int[]{handle.getId()}));
 		}
 	}
 

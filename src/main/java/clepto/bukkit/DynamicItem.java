@@ -3,7 +3,6 @@ package clepto.bukkit;
 import lombok.Getter;
 import lombok.ToString;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -16,12 +15,10 @@ public class DynamicItem {
 	private static final Pattern PATTERN = Pattern.compile("<([A-Za-z0-9_-]+)>");
 
 	private final ItemStack base;
-	private final ItemMeta meta;
 	private final Map<String, String> placeholders = new HashMap<>();
 
 	public DynamicItem(ItemStack staticItem) {
 		this.base = staticItem;
-		this.meta = staticItem.getItemMeta();
 	}
 
 	public DynamicItem fill(String key, String value) {
@@ -30,21 +27,24 @@ public class DynamicItem {
 	}
 
 	public ItemStack forceRender() {
-		ItemMeta meta = this.meta.clone();
+		ItemStack stack = this.base.clone();
 
-		if (!meta.hasDisplayName()) return base;
+		String displayName = stack.getDisplayName();
+		if (displayName == null) return base;
 
-		meta.setDisplayName(render(meta.getDisplayName()));
-		if (!meta.hasLore()) {
-			base.setItemMeta(meta);
-			return base;
+		stack.setDisplayName(render(displayName));
+
+		List<String> lore = stack.getLore();
+
+		if (lore == null) {
+			return stack;
 		}
-		List<String> list = new ArrayList<>();
-		for (String s : meta.getLore()) list.add(render(s));
-		meta.setLore(list);
 
-		base.setItemMeta(meta);
-		return base;
+		List<String> list = new ArrayList<>();
+		for (String s : lore) list.add(render(s));
+		stack.setLore(list);
+
+		return stack;
 
 	}
 

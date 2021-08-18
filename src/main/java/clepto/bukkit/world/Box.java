@@ -1,7 +1,7 @@
 package clepto.bukkit.world;
 
-import clepto.ListUtils;
-import clepto.math.V3;
+import implario.ListUtils;
+import implario.math.V3;
 import lombok.Data;
 import net.minecraft.server.v1_12_R1.BlockPosition;
 import net.minecraft.server.v1_12_R1.IBlockData;

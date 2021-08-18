@@ -3,11 +3,11 @@ package clepto.bukkit.item;
 import clepto.bukkit.groovy.GroovyUtils;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
+import lombok.val;
 import net.minecraft.server.v1_12_R1.ItemStack;
-import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
@@ -30,9 +30,10 @@ public class Items {
 			builder.item = bukkit.getType();
 			builder.data = itemStack.getData();
 			if (bukkit.hasItemMeta()) {
-				ItemMeta meta = bukkit.getItemMeta();
-				if (meta.hasDisplayName()) builder.text.add(meta.getDisplayName());
-				if (meta.hasLore()) builder.text.addAll(meta.getLore());
+				String displayName = bukkit.getDisplayName();
+				if (displayName != null) builder.text.add(displayName);
+				List<String> lore = bukkit.getLore();
+				if (lore != null) builder.text.addAll(lore);
 				Map<String, Object> map = (Map<String, Object>) ItemBuilder.fromNbt(itemStack.tag);
 				if (map != null) {
 					Object display = map.get("display");

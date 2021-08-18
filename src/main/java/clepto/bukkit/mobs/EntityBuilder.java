@@ -3,7 +3,6 @@ package clepto.bukkit.mobs;
 import lombok.Getter;
 import net.minecraft.server.v1_12_R1.*;
 import org.bukkit.craftbukkit.v1_12_R1.entity.CraftLivingEntity;
-import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.v1_12_R1.util.UnsafeList;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
@@ -113,7 +112,7 @@ public class EntityBuilder {
     }
 
     public EntityBuilder armor(EnumItemSlot slot, ItemStack armor) {
-        living.setEquipment(slot, CraftItemStack.asNMSCopy(armor));
+        living.setEquipment(slot, armor.handle);
         return this;
     }
 
