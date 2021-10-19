@@ -1,0 +1,5 @@
+main: dev.implario.bukkit.BukkitToolsPlugin
+name: BukkitTools
+version: $version
+authors: [delfikpro]
+description: Various Bukkit APIs

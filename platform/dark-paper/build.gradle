@@ -1,5 +1,6 @@
 
-version '1.0.0'
+description 'bukkit-tools-darkpaper'
+version '1.0.1'
 
 repositories {
 

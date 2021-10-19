@@ -1,0 +1,19 @@
+
+description 'bukkit-tools-1_16_R3'
+version '1.0.1'
+
+repositories {
+
+    maven {
+        url 'https://repo.anfanik.me/public'
+    }
+
+}
+
+dependencies {
+
+    compileOnly 'org.bukkit:craftbukkit:1.16.5-R0.1-SNAPSHOT'
+
+}
+
+

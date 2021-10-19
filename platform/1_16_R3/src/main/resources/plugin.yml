@@ -1,0 +1,4 @@
+name: BukkitTools1_16_R3
+main: dev.implario.platform.impl.v1_16_R3.Plugin
+version: $version
+loadbefore: [BukkitTools]

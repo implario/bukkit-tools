@@ -11,6 +11,8 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -22,8 +24,32 @@ public class EventContext {
 
     private final Predicate<Event> filter;
 
+    private final EventContext owner;
+
+    private final List<EventContext> children = new ArrayList<>();
+
+    public EventContext(Predicate<Event> filter) {
+        this.filter = filter;
+        this.owner = null;
+    }
+
+    public EventContext fork(Predicate<Event> filter) {
+        EventContext context = new EventContext(this.filter.and(filter), this);
+        children.add(context);
+        return context;
+    }
+
+    public EventContext fork() {
+        return fork(anything -> true);
+    }
+
     public void unregisterAll() {
         HandlerList.unregisterAll(listener);
+        if (owner != null) owner.children.remove(this);
+
+        for (EventContext child : new ArrayList<>(children)) {
+            child.unregisterAll();
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -45,14 +71,25 @@ public class EventContext {
         on(type, EventPriority.HIGH, handler);
     }
 
-    public Routine every(double t, TimeUnit timeUnit, Consumer<Routine> action) {
+    public Routine every(long ticks, Consumer<Routine> action) {
 
         Routine routine = new Routine();
-        long interval = (long) (timeUnit.toMillis(1) * t / 50);
-        routine.setInterval(interval);
+        routine.setInterval(ticks);
         routine.setAction(action);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(Platforms.getPlugin(), () -> routine.getAction().accept(routine),
-                interval, interval);
+                ticks, ticks);
+
+        return routine;
+
+    }
+
+    public Routine after(long ticks, Consumer<Routine> action) {
+
+        Routine routine = new Routine();
+        routine.setInterval(ticks);
+        routine.setAction(action);
+        Bukkit.getScheduler().scheduleSyncDelayedTask(Platforms.getPlugin(), () -> routine.getAction().accept(routine),
+                ticks);
 
         return routine;
 

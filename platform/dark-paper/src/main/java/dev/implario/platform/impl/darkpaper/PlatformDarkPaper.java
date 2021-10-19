@@ -13,8 +13,11 @@ import java.util.Map;
 
 public class PlatformDarkPaper implements Platform {
 
-    public static PlatformDarkPaper get() {
-        return (PlatformDarkPaper) Platforms.get();
+    public static PlatformDarkPaper use() {
+        PlatformDarkPaper platform = new PlatformDarkPaper();
+        Platforms.set(platform);
+        System.setProperty("dev.implario.bukkit.platformclass", PlatformDarkPaper.class.getName());
+        return platform;
     }
 
     @Override

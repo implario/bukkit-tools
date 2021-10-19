@@ -1,0 +1,4 @@
+name: BukkitToolsDarkPaper
+main: dev.implario.platform.impl.darkpaper.Plugin
+version: $version
+loadbefore: [BukkitTools]

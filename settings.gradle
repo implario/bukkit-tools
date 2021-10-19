@@ -2,4 +2,5 @@ rootProject.name = 'bukkit-tools'
 
 include 'kotlin-api'
 
-if (System.getenv('IMPLARIO_REPO_USER')) include 'platform:dark-paper'
+include 'platform:dark-paper'
+include 'platform:1_16_R3'
