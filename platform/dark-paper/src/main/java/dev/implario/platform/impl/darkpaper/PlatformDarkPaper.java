@@ -1,15 +1,15 @@
 package dev.implario.platform.impl.darkpaper;
 
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
 import dev.implario.bukkit.platform.Platform;
 import dev.implario.bukkit.platform.Platforms;
+import lombok.val;
 import net.minecraft.server.v1_12_R1.*;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_12_R1.util.CraftMagicNumbers;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class PlatformDarkPaper implements Platform {
 
@@ -39,6 +39,13 @@ public class PlatformDarkPaper implements Platform {
         return (Map<String, Object>) fromNbt(itemStack.handle != null ?
                 itemStack.handle.getOrCreateTag() :
                 org.bukkit.inventory.ItemStack.asNMSCopy(itemStack).getOrCreateTag());
+    }
+
+    @Override
+    public void setSkullSkin(org.bukkit.inventory.ItemStack item, String skinUrl) {
+            val gameProfile = new GameProfile(UUID.randomUUID(), "");
+            gameProfile.getProperties().put("textures", new Property("textures", skinUrl));
+            item.setSkullOwner(gameProfile);
     }
 
     public static NBTBase toNbt(Object object) {
