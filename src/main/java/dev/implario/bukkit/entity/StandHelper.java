@@ -17,33 +17,33 @@ public class StandHelper {
         plugin = JavaPlugin.getProvidingPlugin(StandHelper.class);
     }
 
-    private StandHelper invisible(boolean state) {
+    public StandHelper invisible(boolean state) {
         stand.setVisible(state);
         return this;
     }
 
-    private StandHelper name(String title) {
+    public StandHelper name(String title) {
         stand.setCustomNameVisible(true);
         stand.setCustomName(title == null ? "" : title);
         return this;
     }
 
-    private StandHelper gravity(boolean state) {
+    public StandHelper gravity(boolean state) {
         stand.setGravity(state);
         return this;
     }
 
-    private StandHelper marker(boolean state) {
+    public StandHelper marker(boolean state) {
         stand.setMarker(state);
         return this;
     }
 
-    private StandHelper child(boolean state) {
+    public StandHelper child(boolean state) {
         stand.setSmall(state);
         return this;
     }
 
-    private <T> StandHelper fixedData(@NonNull String key, @NonNull T object) {
+    public <T> StandHelper fixedData(@NonNull String key, @NonNull T object) {
         stand.setMetadata(key, new FixedMetadataValue(plugin, object));
         return this;
     }
@@ -54,7 +54,7 @@ public class StandHelper {
         return this;
     }*/
 
-    private ArmorStand build() {
+    public ArmorStand build() {
         return stand;
     }
 }
