@@ -56,50 +56,49 @@ public class EventContext implements Listener {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends Event> EventContext on(Class<T> type, EventPriority priority, Consumer<T> action) {
+    public <T extends Event> void on(Class<T> type, EventPriority priority, Consumer<T> action) {
         Bukkit.getPluginManager().registerEvent(type, this, priority, (listener1, event) -> {
             if (type.isInstance(event) && filter.test(event)) action.accept((T) event);
         }, Platforms.getPlugin());
-        return this;
     }
 
-    public <T extends Event> EventContext on(Class<T> type, Consumer<T> handler) {
-        return on(type, EventPriority.NORMAL, handler);
+    public <T extends Event> void on(Class<T> type, Consumer<T> handler) {
+        on(type, EventPriority.NORMAL, handler);
     }
 
-    public <T extends Event> EventContext before(Class<T> type, Consumer<T> handler) {
-        return on(type, EventPriority.LOW, handler);
+    public <T extends Event> void before(Class<T> type, Consumer<T> handler) {
+        on(type, EventPriority.LOW, handler);
     }
 
-    public <T extends Event> EventContext after(Class<T> type, Consumer<T> handler) {
-        return on(type, EventPriority.HIGH, handler);
+    public <T extends Event> void after(Class<T> type, Consumer<T> handler) {
+        on(type, EventPriority.HIGH, handler);
     }
 
-    public <T extends Event & Cancellable> EventContext cancel(Class<T> type) {
-        return cancel(type, EventPriority.NORMAL);
+    public <T extends Event & Cancellable> void cancel(Class<T> type) {
+        cancel(type, EventPriority.NORMAL);
     }
 
-    public <T extends Event & Cancellable> EventContext cancel(Class<T> type, EventPriority priority) {
-        return on(type, priority, e -> e.setCancelled(true));
+    public <T extends Event & Cancellable> void cancel(Class<T> type, EventPriority priority) {
+        on(type, priority, e -> e.setCancelled(true));
     }
 
-    public <T extends Event & Cancellable> EventContext filterOn(Class<T> type, EventPriority priority, Predicate<T> action) {
-        return on(type, priority, event -> {
+    public <T extends Event & Cancellable> void filterOn(Class<T> type, EventPriority priority, Predicate<T> action) {
+        on(type, priority, event -> {
             boolean accepted = action.test(event);
             if (!accepted) event.setCancelled(true);
         });
     }
 
-    public <T extends Event & Cancellable> EventContext filter(Class<T> type, Predicate<T> handler) {
-        return filterOn(type, EventPriority.NORMAL, handler);
+    public <T extends Event & Cancellable> void filter(Class<T> type, Predicate<T> handler) {
+        filterOn(type, EventPriority.NORMAL, handler);
     }
 
-    public <T extends Event & Cancellable> EventContext filterBefore(Class<T> type, Predicate<T> handler) {
-        return filterOn(type, EventPriority.LOW, handler);
+    public <T extends Event & Cancellable> void filterBefore(Class<T> type, Predicate<T> handler) {
+        filterOn(type, EventPriority.LOW, handler);
     }
 
-    public <T extends Event & Cancellable> EventContext filterAfter(Class<T> type, Predicate<T> handler) {
-        return filterOn(type, EventPriority.HIGH, handler);
+    public <T extends Event & Cancellable> void filterAfter(Class<T> type, Predicate<T> handler) {
+        filterOn(type, EventPriority.HIGH, handler);
     }
 
     public Routine every(long ticks, Consumer<Routine> action) {
