@@ -101,19 +101,19 @@ public class EventContext implements Listener {
         filterOn(type, EventPriority.HIGH, handler);
     }
 
-    public Routine every(long ticks, Consumer<Routine> action) {
+    public Routine after(long ticks, Consumer<Routine> action) {
 
         Routine routine = new Routine();
         routine.setInterval(ticks);
         routine.setAction(action);
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(Platforms.getPlugin(), () -> routine.getAction().accept(routine),
-                ticks, ticks);
+        Bukkit.getScheduler().scheduleSyncDelayedTask(Platforms.getPlugin(), () -> routine.getAction().accept(routine),
+                ticks);
 
         return routine;
 
     }
 
-    public Routine after(long ticks, Consumer<Routine> action) {
+    public Routine every(long ticks, Consumer<Routine> action) {
 
         Routine routine = new Routine();
         routine.setInterval(ticks);
