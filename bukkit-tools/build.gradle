@@ -1,0 +1,34 @@
+version '4.4.5'
+
+compileJava.options.encoding 'UTF-8'
+tasks.withType(JavaCompile) {
+    options.encoding 'UTF-8'
+}
+
+
+processResources {
+    def versionFile = file("$buildDir/version.txt")
+    doLast { versionFile.text = version }
+    outputs.upToDateWhen {
+        versionFile.exists() && versionFile.text == version
+    }
+    filter {
+        it.replace("\$version", version)
+    }
+}
+
+dependencies {
+    implementation 'org.junit.jupiter:junit-jupiter:5.7.0'
+    testImplementation 'org.junit:junit-bom:5.7.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
+    testCompileOnly 'org.projectlombok:lombok:1.18.12'
+
+    compileOnly 'org.bukkit:bukkit:1.12.2-R0.1-SNAPSHOT'
+    testImplementation 'org.bukkit:bukkit:1.12.2-R0.1-SNAPSHOT'
+}
+
+test {
+    useJUnitPlatform()
+}

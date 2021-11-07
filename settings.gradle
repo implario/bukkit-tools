@@ -1,5 +1,6 @@
 rootProject.name = 'bukkit-tools'
 
+include 'bukkit-tools'
 include 'kotlin-api'
 
 include 'platform:dark-paper'

@@ -1,6 +1,5 @@
 package dev.implario.bukkit.item;
 
-import dev.implario.bukkit.platform.Platform;
 import dev.implario.bukkit.platform.Platforms;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

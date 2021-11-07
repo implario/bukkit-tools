@@ -119,8 +119,15 @@ public class EventContext implements Listener {
         Routine routine = new Routine();
         routine.setInterval(ticks);
         routine.setAction(action);
-        Bukkit.getScheduler().scheduleSyncDelayedTask(Platforms.getPlugin(), () -> routine.getAction().accept(routine),
-                ticks);
+        int taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(Platforms.getPlugin(), () -> {
+            routine.setNextPassTime(System.currentTimeMillis() + ticks * 50);
+            routine.getAction().accept(routine);
+            routine.setPass(routine.getPass() + 1);
+            if (routine.getPassLimit() != 0 && routine.getPass() >= routine.getPassLimit()) {
+                routine.getKillHandler().accept(routine);
+            }
+        }, ticks, ticks);
+        routine.setKillHandler(r -> Bukkit.getScheduler().cancelTask(taskId));
 
         return routine;
 

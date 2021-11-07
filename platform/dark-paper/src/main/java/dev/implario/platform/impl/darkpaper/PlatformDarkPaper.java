@@ -1,10 +1,7 @@
 package dev.implario.platform.impl.darkpaper;
 
-import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.properties.Property;
 import dev.implario.bukkit.platform.Platform;
 import dev.implario.bukkit.platform.Platforms;
-import lombok.val;
 import net.minecraft.server.v1_12_R1.*;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_12_R1.util.CraftMagicNumbers;
