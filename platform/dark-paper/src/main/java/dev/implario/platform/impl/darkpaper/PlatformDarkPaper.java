@@ -41,13 +41,6 @@ public class PlatformDarkPaper implements Platform {
                 org.bukkit.inventory.ItemStack.asNMSCopy(itemStack).getOrCreateTag());
     }
 
-    @Override
-    public void setSkullSkin(org.bukkit.inventory.ItemStack item, String skinUrl) {
-            val gameProfile = new GameProfile(UUID.randomUUID(), "");
-            gameProfile.getProperties().put("textures", new Property("textures", skinUrl));
-            item.setSkullOwner(gameProfile);
-    }
-
     public static NBTBase toNbt(Object object) {
         if (object instanceof Map) {
             Map<?, ?> map = (Map<?, ?>) object;

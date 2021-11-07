@@ -60,16 +60,19 @@ public class ItemBuilder {
 		type = Material.SKULL_ITEM;
 		data = 3;
 
-        /*
-        Platform.get().setSkullSkin();
-		val gameProfile = new GameProfile(UUID.randomUUID(), "");
+		Map<String, Object> nbtDisplay = new HashMap<>();
+		Map<String, Object> nbtSkullOwner = new HashMap<>();
+		Map<String, Object> nbtProperties = new HashMap<>();
+		List<Object> nbtTextures = new ArrayList<>();
+		Map<String, Object> nbtSkin = new HashMap<>();
+		nbtSkin.put("Value", url);
+		nbtTextures.add(nbtSkin);
+		nbtProperties.put("textures", nbtTextures);
+		nbtSkullOwner.put("Properties", nbtProperties);
+		nbtSkullOwner.put("Id", UUID.randomUUID());
+		nbtDisplay.put("SkullOwner", nbtSkullOwner);
+		nbt("display", nbtDisplay);
 
-		gameProfile.getProperties().put("textures", new Property("textures", url));
-		skullMeta.profile = gameProfile;
-		skull.setItemMeta(skullMeta);
-
-		return skull;
-		*/
 	}
 
 	public ItemBuilder armorColor(int color) {

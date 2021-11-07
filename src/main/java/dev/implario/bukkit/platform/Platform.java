@@ -16,6 +16,4 @@ public interface Platform {
 
     Map<String, Object> getNbt(ItemStack itemStack);
 
-    void setSkullSkin(ItemStack item, String skinUrl);
-
 }
