@@ -10,8 +10,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.event.*;
 import org.bukkit.event.player.PlayerJoinEvent;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -24,6 +23,7 @@ public class EventContext implements Listener {
     private final EventContext owner;
 
     private final List<EventContext> children = new ArrayList<>();
+    private final Set<Integer> routines = new HashSet<>();
 
     public EventContext(Predicate<Event> filter) {
         this.filter = filter;
@@ -38,6 +38,8 @@ public class EventContext implements Listener {
 
     public void unregisterAll() {
         HandlerList.unregisterAll(this);
+        routines.forEach(Bukkit.getScheduler()::cancelTask);
+        routines.clear();
         if (owner != null) owner.children.remove(this);
 
         for (EventContext child : new ArrayList<>(children)) {
@@ -106,11 +108,16 @@ public class EventContext implements Listener {
         Routine routine = new Routine();
         routine.setInterval(ticks);
         routine.setAction(action);
-        Bukkit.getScheduler().scheduleSyncDelayedTask(Platforms.getPlugin(), () -> routine.getAction().accept(routine),
-                ticks);
+        int[] taskId = {0};
+        taskId[0] = Bukkit.getScheduler().scheduleSyncDelayedTask(Platforms.getPlugin(), () -> {
+            routines.remove(taskId[0]);
+            routine.getAction().accept(routine);
+        }, ticks);
+
+        routines.add(taskId[0]);
+        routine.setId(taskId[0]);
 
         return routine;
-
     }
 
     public Routine every(long ticks, Consumer<Routine> action) {
@@ -118,7 +125,8 @@ public class EventContext implements Listener {
         Routine routine = new Routine();
         routine.setInterval(ticks);
         routine.setAction(action);
-        int taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(Platforms.getPlugin(), () -> {
+        int[] taskId = {0};
+        taskId[0] = Bukkit.getScheduler().scheduleSyncRepeatingTask(Platforms.getPlugin(), () -> {
             routine.setNextPassTime(System.currentTimeMillis() + ticks * 50);
             routine.getAction().accept(routine);
             routine.setPass(routine.getPass() + 1);
@@ -126,7 +134,11 @@ public class EventContext implements Listener {
                 routine.getKillHandler().accept(routine);
             }
         }, ticks, ticks);
-        routine.setKillHandler(r -> Bukkit.getScheduler().cancelTask(taskId));
+        routines.add(taskId[0]);
+        routine.setKillHandler(r -> {
+            routines.remove(taskId[0]);
+            Bukkit.getScheduler().cancelTask(taskId[0]);
+        });
 
         return routine;
 
